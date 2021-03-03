@@ -1,0 +1,7 @@
+---
+# tasks file for packages
+
+  - name: install packages that are present in the CIS RHEL7 AMI image
+    yum:
+      name: "{{ packages }}"
+      state: latest

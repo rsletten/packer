@@ -1,0 +1,4 @@
+---
+# vars file for rhel7
+
+packages: "{{ lookup('file', cis_rhel7_packages ) }}"

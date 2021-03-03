@@ -1,0 +1,67 @@
+{
+  "variables": {
+    "CIS_RHEL7_PKGS": ""
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<esc>",
+        "<wait>",
+        "linux text inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/cis_rhel7.ks",
+        "<enter>"
+      ],
+      "format": "ova",
+      "disk_size": "12288",
+      "guest_os_type": "RedHat_64",
+      "hard_drive_interface": "sata",
+      "hard_drive_nonrotational": "true",
+      "http_directory": "http",
+      "iso_checksum": "md5:7e40e30e794ca80fcd840aa1a54876b0",
+      "iso_url": "file:///Users/rsletten/Downloads/rhel-server-7.9-x86_64-dvd.iso",
+      "sata_port_count": "5",
+      "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
+      "ssh_timeout": "3600s",
+      "ssh_username": "ec2-user",
+      "ssh_agent_auth": true,
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "2048"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "2"
+        ]
+      ],
+      "vm_name": "rhel7"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "ansible",
+      "playbook_file": "ansible/software/cis_rhel7_pkgs.yml",
+      "extra_arguments": [ "--extra-vars", "cis_rhel7_packages={{user `CIS_RHEL7_PKGS`}}" ],
+      "user": "ec2-user"
+    },
+    {
+      "type": "shell",
+      "remote_folder": "/home/ec2-user",
+      "inline": ["sudo yum -y update"]
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "ansible/ansible-collection-hardening/c2s_hardening.yml",
+      "user": "ec2-user"
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "ansible/unregister.yml",
+      "user": "ec2-user"
+    }
+  ]
+} 
